@@ -50,15 +50,34 @@ AddEventHandler('screenshotTaken', function(imageUrl, weaponName)
     end
 end)
 
+RegisterServerEvent('screenshotTaken')
+AddEventHandler('screenshotTaken', function(imageUrl, weaponName)
+    local src = source
+    local xPlayer = QBCore.Functions.GetPlayer(src)
+    if xPlayer then
+        if Config.Debug then
+            print("Debug: Screenshot taken for weapon: " .. tostring(weaponName))
+            print("Debug: Image URL: " .. imageUrl)
+        end
+        SendToDiscord(src, xPlayer, imageUrl, weaponName)
+    end
+end)
+
 function SendToDiscord(src, xPlayer, imageUrl, weaponName)
     local steamId, license, discord = 'Not found', 'Not found', 'Not found'
+
+    -- Hämtar och kategoriserar spelaridentifierare
     for k, v in pairs(GetPlayerIdentifiers(src)) do
-        if string.sub(v, 1, 8) == 'license:' then
-            steamId = v
+
+        if string.sub(v, 1, 6) == 'steam:' then
+            steamId = string.sub(v, 7)
+        elseif string.sub(v, 1, 8) == 'license:' then
+            license = string.sub(v, 9)
         elseif string.sub(v, 1, 8) == 'discord:' then
             discord = '<@' .. string.sub(v, 9) .. '>'
         end
     end
+    -- Skapar datastruktur för Discord-meddelandet
     local currentDateTime = os.date("%Y-%m-%d %H:%M:%S")
     local data = {
         username = Config.Username,
@@ -78,6 +97,7 @@ function SendToDiscord(src, xPlayer, imageUrl, weaponName)
         }}
     }
 
+    -- Skickar meddelandet till Discord
     if Config.Debug then
         print("Debug: Preparing to send message to Discord.")
         print("Debug: Data payload for Discord: " .. json.encode(data))
