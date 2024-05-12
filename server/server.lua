@@ -67,12 +67,12 @@ function SendToDiscord(src, xPlayer, imageUrl, weaponName)
             color = Config.DiscordMessageSettings.color,
             thumbnail = { url = Config.DiscordMessageSettings.thumbnail_url },
             fields = {
-                { name = "CitizenID", value = tostring(xPlayer.PlayerData.citizenid), inline = false },
-                { name = "Name", value = xPlayer.PlayerData.name, inline = false },
-                { name = "License", value = license, inline = false },
-                { name = "DiscordID", value = discord, inline = false },
-                { name = "Weapon", value = tostring(weaponName), inline = false },
-                { name = "Date and Time", value = currentDateTime, inline = false }
+                { name = "**CitizenID**", value = tostring(xPlayer.PlayerData.citizenid), inline = false },
+                { name = "**Name**", value = xPlayer.PlayerData.name, inline = false },
+                { name = "**License**", value = license, inline = false },
+                { name = "**DiscordID**", value = discord, inline = false },
+                { name = "**Weapon**", value = tostring(weaponName), inline = false },
+                { name = "**Date and Time**", value = currentDateTime, inline = false }
             },
             image = { url = imageUrl }
         }}
