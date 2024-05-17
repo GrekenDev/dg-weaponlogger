@@ -18,7 +18,7 @@ Follow these steps to install the Weapon Firing Detector on your FiveM server:
 2. **Install the Resource**:
    Copy the `weapon-firing-detector` folder into the `resources` directory of your FiveM server.
 3. **Modify Server Configuration**:
-   Open your `server.cfg` file and add the following line:
+   Open your `server.cfg` file and add the following line: ensure dg-weaponlogger
 
 ## Configuration
 
