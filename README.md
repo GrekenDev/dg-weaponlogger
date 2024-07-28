@@ -85,6 +85,12 @@ DG Weapon Logger is a script for FiveM servers using the QBCore framework. It lo
 
 Once installed and configured, the script will automatically log weapon firing events, capture screenshots, and send the information to your specified Discord channel.
 
+## Example Output
+
+Here is an example of the output sent to Discord:
+
+![Discord Output](https://i.imgur.com/vzBUbiy.png)
+
 ## Contributing
 
 1. Fork the repository
