@@ -10,6 +10,7 @@ DG Weapon Logger is a script for FiveM servers using the QBCore framework. It lo
 - Filters out blacklisted weapons and jobs
 - Configurable screenshot cooldown
 - Debug mode for troubleshooting
+- Configurable avatar URL for Discord webhook
 
 ## Requirements
 
@@ -72,6 +73,9 @@ DG Weapon Logger is a script for FiveM servers using the QBCore framework. It lo
 
     -- Username for Discord webhook
     Config.Username = "Shooting Log"
+
+    -- Avatar URL for Discord webhook
+    Config.AvatarUrl = "https://your-avatar-url.com/avatar.png"
     ```
 
 4. **Ensure Dependencies are Installed:**

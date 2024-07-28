@@ -4,8 +4,8 @@ Config = {}
 Config.Debug = true
 
 -- URL for Discord webhooks
-Config.WebhookUrlMessage = "https://discord.com/api/webhooks/1232896992070602783/WDFH-__YhLIZwAGa3jZtL5qF0x1Q0j7LlMlPzCRB20awdaEYJ3Tx7phif8CNLW63iXfM"
-Config.WebhookUrlScreenshot = "https://discord.com/api/webhooks/1248604172983734352/Dz7wud94RUJJT2DuMHRm-CbaLB96wHQR3DRxBzV84rJ_NTLVB6KPA6J7vdqotd0xmzXB"
+Config.WebhookUrlMessage = "YOUR_DISCORD_WEBHOOK_URL_FOR_MESSAGES"
+Config.WebhookUrlScreenshot = "YOUR_DISCORD_WEBHOOK_URL_FOR_SCREENSHOTS"
 
 -- Settings for screenshot
 Config.ScreenshotSettings = {
@@ -37,3 +37,6 @@ Config.DiscordMessageSettings = {
 
 -- Username for Discord webhook
 Config.Username = "Shooting Log"
+
+-- Avatar URL for Discord webhook
+Config.AvatarUrl = "https://your-avatar-url.com/avatar.png"

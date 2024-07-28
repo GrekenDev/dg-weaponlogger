@@ -117,6 +117,7 @@ function SendToDiscord(src, xPlayer, imageUrl, weaponName, playerName, playerLic
     local currentDateTime = os.date("%Y-%m-%d %H:%M:%S")
     local data = {
         username = Config.Username,
+        avatar_url = Config.AvatarUrl,
         embeds = {{
             title = Config.DiscordMessageSettings.title,
             color = Config.DiscordMessageSettings.color,
