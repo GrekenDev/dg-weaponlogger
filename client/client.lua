@@ -1,52 +1,79 @@
--- Hämta vapendata från ox_inventory (om du behöver det för debug eller framtida funktioner)
-local weapons = exports.ox_inventory:Items()
-
-if Config.Debug then
-    print("Debug: Weapon data fetched from ox_inventory")
-    for name, weapon in pairs(weapons) do
-        if weapon.type == 'weapon' then
-            print(string.format("Debug: Weapon - Name: %s, Label: %s", name, weapon.label or 'N/A'))
+local function getCurrentWeapon()
+    local inventory = Config.Inventory
+    if inventory == "ox_inventory" then
+        local resource = Config.OXInventoryResource or "ox_inventory"
+        return exports[resource]:GetCurrentWeapon('player')
+    elseif inventory == "bb_inventory" then
+        local resource = Config.BBInventoryResource or "bb_inventory"
+        local api = exports[resource]:GetAPI()
+        local weapon = api.GetCurrentWeapon()
+        if weapon then
+            weapon.name = weapon.name or (weapon.item and weapon.item.name) or nil
         end
+        return weapon
+    elseif inventory == "qb-inventory" then
+        local resource = Config.QBInventoryResource or "qb-inventory"
+        return exports[resource]:GetCurrentWeapon()
+    else
+        if Config.Debug then
+            print("Debug: Unknown inventory type in config: " .. tostring(inventory))
+        end
+        return nil
     end
 end
 
+local lastShot = 0
+
 Citizen.CreateThread(function()
     while true do
-        Citizen.Wait(0)
+        Citizen.Wait(10) -- Kör ofta, men inte varje frame
         if IsPedShooting(PlayerPedId()) then
-            local weapon = exports.ox_inventory:GetCurrentWeapon('player')
-            if weapon and weapon.name and weapon.name ~= "" then
+            local now = GetGameTimer()
+            if now - lastShot > Config.ScreenshotCooldown then
+                lastShot = now
+                local weapon = getCurrentWeapon()
                 if Config.Debug then
-                    print(("Debug: Current weapon: %s"):format(weapon.name))
+                    print("Debug: Weapon object: " .. json.encode(weapon))
                 end
-                TriggerServerEvent('weaponFired', weapon.name:lower())
-            else
-                if Config.Debug then
-                    print("Debug: No weapon detected from ox_inventory or weapon name is empty")
+                if weapon and weapon.name and weapon.name ~= "" then
+                    if Config.Debug then
+                        print(("Debug: Current weapon: %s"):format(weapon.name))
+                    end
+                    TriggerServerEvent('weaponFired', weapon.name:lower())
+                else
+                    if Config.Debug then
+                        print("Debug: No weapon detected or weapon name is empty")
+                    end
                 end
             end
-            Citizen.Wait(Config.ScreenshotCooldown) -- För att undvika spam
         end
     end
 end)
 
 RegisterNetEvent('requestScreenshot')
 AddEventHandler('requestScreenshot', function(data)
-    if data and data.url then
+    if Config.FiveManageApiUrl and Config.FiveManageToken then
         if Config.Debug then
-            print("Debug: Requesting screenshot upload to FiveManage via screenshot-basic, URL: " .. data.url)
+            print("Debug: Requesting screenshot upload to FiveManage via screenshot-basic, URL: " .. Config.FiveManageApiUrl)
         end
         exports['screenshot-basic']:requestScreenshotUpload(
-            data.url,
-            'files[]',
-            Config.ScreenshotSettings,
+            Config.FiveManageApiUrl,
+            'file',
+            {
+                headers = {
+                    Authorization = Config.FiveManageToken
+                }
+            },
             function(response)
-                local resp = json.decode(response)
-                if resp and resp.success and resp.url then
+                if Config.Debug then
+                    print("Debug: Raw screenshot-basic response: " .. tostring(response))
+                end
+                local resp = json.decode(response or "")
+                if resp and resp.data and resp.data.url then
                     if Config.Debug then
-                        print("Debug: Screenshot uploaded to FiveManage, image URL: " .. resp.url)
+                        print("Debug: Screenshot uploaded to FiveManage, image URL: " .. resp.data.url)
                     end
-                    TriggerServerEvent('screenshotTaken', resp.url, data.weaponName, data.playerName, data.playerLicense, data.playerJob, data.playerGang)
+                    TriggerServerEvent('screenshotTaken', resp.data.url, data.weaponName, data.playerName, data.playerLicense, data.playerJob, data.playerGang)
                 else
                     if Config.Debug then
                         print("Debug: Screenshot upload failed or unexpected response: " .. response)
@@ -56,7 +83,7 @@ AddEventHandler('requestScreenshot', function(data)
         )
     else
         if Config.Debug then
-            print("Debug: No URL for screenshot upload received")
+            print("Debug: FiveManage API URL or API Key not set in config")
         end
     end
 end)

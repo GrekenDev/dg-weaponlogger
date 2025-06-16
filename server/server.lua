@@ -1,5 +1,5 @@
 if Config.Debug then
-    print("Debug: Server started, using Qbox/ox_inventory and FiveManage for screenshots.")
+    print("Debug: Server started, using " .. tostring(Config.Inventory) .. " and FiveManage for screenshots.")
 end
 
 function table.includes(tbl, value)
@@ -11,20 +11,55 @@ function table.includes(tbl, value)
     return false
 end
 
+local function getPlayerData(src)
+    local coreName = Config.CoreResource or "qbx_core"
+    local name, job, gang, citizenid, license = "N/A", "N/A", "N/A", "N/A", "N/A"
+
+    if coreName == "qbx_core" then
+        local player = exports[coreName]:GetPlayer(src)
+        if player then
+            name = (player.PlayerData.charinfo.firstname or "") .. " " .. (player.PlayerData.charinfo.lastname or "")
+            job = player.PlayerData.job and player.PlayerData.job.name or "N/A"
+            gang = player.PlayerData.gang and player.PlayerData.gang.name or "N/A"
+            citizenid = player.PlayerData.citizenid or "N/A"
+            license = player.PlayerData.license or "N/A"
+        end
+    elseif coreName == "qb-core" then
+        local player = exports[coreName]:GetPlayer(src)
+        if player then
+            name = (player.PlayerData.charinfo.firstname or "") .. " " .. (player.PlayerData.charinfo.lastname or "")
+            job = player.PlayerData.job and player.PlayerData.job.name or "N/A"
+            gang = player.PlayerData.gang and player.PlayerData.gang.name or "N/A"
+            citizenid = player.PlayerData.citizenid or "N/A"
+            license = player.PlayerData.license or "N/A"
+        end
+    elseif coreName == "es_extended" then
+        local xPlayer = exports[coreName]:GetPlayerFromId(src)
+        if xPlayer then
+            name = xPlayer.getName() or "N/A"
+            job = xPlayer.getJob and xPlayer.getJob().name or "N/A"
+            gang = xPlayer.getGroup and xPlayer.getGroup() or "N/A"
+            citizenid = xPlayer.getIdentifier() or "N/A"
+            license = xPlayer.getIdentifier() or "N/A"
+        end
+    elseif coreName == "ox_core" then
+        local player = exports[coreName]:GetPlayer(src)
+        if player then
+            name = player.getName and player.getName() or "N/A"
+            job = player.getGroup and player.getGroup() or "N/A"
+            gang = "N/A" -- ox_core har oftast inte gang
+            citizenid = player.getIdentifier and player.getIdentifier() or "N/A"
+            license = player.getIdentifier and player.getIdentifier() or "N/A"
+        end
+    end
+
+    return name, job, gang, citizenid, license
+end
+
 RegisterServerEvent('weaponFired')
 AddEventHandler('weaponFired', function(weaponName)
     local src = source
-
-    local player = exports['qbx-core']:GetPlayer(src)
-    local name, job, gang, citizenid, license = "N/A", "N/A", "N/A", "N/A", "N/A"
-
-    if player then
-        name = (player.PlayerData.charinfo.firstname or "") .. " " .. (player.PlayerData.charinfo.lastname or "")
-        job = player.PlayerData.job and player.PlayerData.job.name or "N/A"
-        gang = player.PlayerData.gang and player.PlayerData.gang.name or "N/A"
-        citizenid = player.PlayerData.citizenid or "N/A"
-        license = player.PlayerData.license or "N/A"
-    end
+    local name, job, gang, citizenid, license = getPlayerData(src)
 
     if Config.Debug then
         print(("Debug: Player %s fired weapon %s"):format(name, weaponName))
@@ -50,7 +85,7 @@ AddEventHandler('weaponFired', function(weaponName)
 end)
 
 RegisterServerEvent('screenshotTaken')
-AddEventHandler('screenshotTaken', function(imageUrl, weaponName, playerName, citizenid, playerLicense, playerJob, playerGang)
+AddEventHandler('screenshotTaken', function(imageUrl, weaponName, playerName, playerLicense, playerJob, playerGang)
     local src = source
 
     local discord = 'Not found'
@@ -69,11 +104,10 @@ AddEventHandler('screenshotTaken', function(imageUrl, weaponName, playerName, ci
             color = Config.DiscordMessageSettings.color,
             thumbnail = { url = Config.DiscordMessageSettings.thumbnail_url },
             fields = {
-                { name = "**Name**", value = playerName, inline = false },
-                { name = "**CitizenID**", value = citizenid, inline = false },
-                { name = "**License**", value = playerLicense, inline = false },
-                { name = "**Job**", value = playerJob, inline = false },
-                { name = "**Gang**", value = playerGang, inline = false },
+                { name = "**Name**", value = playerName or "N/A", inline = false },
+                { name = "**License**", value = playerLicense or "N/A", inline = false },
+                { name = "**Job**", value = playerJob or "N/A", inline = false },
+                { name = "**Gang**", value = playerGang or "N/A", inline = false },
                 { name = "**DiscordID**", value = discord, inline = false },
                 { name = "**Weapon**", value = tostring(weaponName), inline = false },
                 { name = "**Date and Time**", value = currentDateTime, inline = false }
@@ -86,7 +120,7 @@ AddEventHandler('screenshotTaken', function(imageUrl, weaponName, playerName, ci
         print("Debug: Sending embed to Discord with FiveManage image URL: " .. tostring(imageUrl))
     end
 
-    PerformHttpRequest(Config.WebhookUrlMessage, function(err, text, headers)
+    PerformHttpRequest(Config.DiscordWebhook, function(err, text, headers)
         if Config.Debug then
             if err ~= 0 then
                 print("Debug: Error while sending message to Discord: " .. err)
